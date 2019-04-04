@@ -12,7 +12,7 @@ local background = {
 }
 local global_time = 0 -- elapsed ticks
 local max_tree_gen = 10 -- number of branch generations
-local number_of_trees = 5
+local number_of_trees = 8
 
 -- LOVE FUNCTIONS
 
@@ -22,7 +22,10 @@ function love.load()
     love.window.setMode(
         screen_width,
         screen_height,
-        {vsync = true}
+        {
+            vsync = true,
+            msaa = 4,
+        }
     )
     love.window.setTitle("nice tree")
 end
@@ -52,17 +55,23 @@ function love.keypressed(key)
 end
 
 function love.draw(alpha)
-    love.graphics.setColor(255, 255, 255)
+    engine.setColor(255, 255, 255)
     engine.draw_background()
     for i = 1, #objects do
         local o = objects[i]
         engine.draw_object(o)
     end
-    love.graphics.setColor(255, 255, 255)
+    engine.setColor(255, 255, 255)
     love.graphics.print("press space to generate trees", 10, 10)
 end
 
 -- ENGINE FUNCTIONS
+
+-- note(ryan): this uses the old value from 0 - 255
+function engine.setColor(r, g, b, a)
+    if a == nil then a = 255 end
+    love.graphics.setColor(r / 255, g / 255, b / 255, a / 255) 
+end
 
 function engine.create_first_branch(x, y)
     local first_branch = engine.new_object(
@@ -258,16 +267,16 @@ function engine.update_background()
         g = g + o.color.g
         b = b + o.color.b
     end
-    background.target_r = (r / count) * 0.33
-    background.target_g = (g / count) * 0.33
-    background.target_b = (b / count) * 0.33
+    background.target_r = (r / count) * 0.5
+    background.target_g = (g / count) * 0.5
+    background.target_b = (b / count) * 0.5
     background.r = helpers.step(background.r, background.target_r, 1)
     background.g = helpers.step(background.g, background.target_g, 1)
     background.b = helpers.step(background.b, background.target_b, 1)
 end
 
 function engine.draw_background()
-    love.graphics.setColor(background.r, background.g, background.b)
+    engine.setColor(background.r, background.g, background.b)
     love.graphics.rectangle(
         "fill",
         0,
@@ -279,7 +288,7 @@ end
 
 function engine.draw_object(o)
     if o.image then
-        love.graphics.setColor(o.color.r, o.color.g, o.color.b, o.color.a)
+        engine.setColor(o.color.r, o.color.g, o.color.b, o.color.a)
         love.graphics.draw(
             o.image,
             o.x,

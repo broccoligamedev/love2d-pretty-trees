@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.console = true -- enable the console
+	t.console = true -- enable the console
 end
 
 function love.run()
